@@ -108,7 +108,7 @@ h1, h2, h3, h4 { font-family: var(--head); font-weight: 600; margin: 0; line-hei
 }
 .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff; }
 .brand:hover { color: #fff; }
-.brand-mark { font-size: 36px; }
+.brand-mark { width: 40px; height: 40px; border: 3px solid var(--wood-dark); image-rendering: pixelated; }
 .brand-text { display: flex; flex-direction: column; line-height: 1; }
 .brand-title { font: 700 26px/1 var(--head); color: var(--gold); text-shadow: 2px 2px 0 var(--wood-dark); letter-spacing: 0.02em; }
 .brand-sub { font-size: 18px; color: #ffe9c4; margin-top: 3px; }

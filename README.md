@@ -27,7 +27,6 @@ js/app.js            # enrutado por hash (#/<seccion>), widgets y casillas guard
 js/data.js           # aldeanos, festivales, lotes, cultivos y peces legendarios
 js/icons.js          # iconos pixel propios, dibujados como rejillas de texto
 pages/<seccion>.html # el texto de cada sección
-tools/make_icons.py  # genera img/ a partir de la estrella de icons.js
 ```
 
 Para añadir una sección: crear `pages/<slug>.html` y añadirla a `PAGES` en `js/app.js`.
@@ -43,5 +42,5 @@ archivo `CNAME` y de un registro CNAME `nunca-stardew` → `wandering-code.githu
 ## Datos y créditos
 
 Datos contrastados con la [wiki de Stardew Valley](https://es.stardewvalleywiki.com)
-(CC BY-NC-SA). Proyecto de fans sin relación con ConcernedApe. No se usa arte del juego: los
-iconos y el fondo son dibujos propios.
+(CC BY-NC-SA). Proyecto de fans sin relación con ConcernedApe. El icono de la app (`img/`) es el icono
+oficial del juego, propiedad de ConcernedApe; el resto de iconos y el fondo son dibujos propios.
