@@ -31,15 +31,28 @@
         <span class="brand-sub">Guía de Stardew Valley · 1.6</span>
       </span>
     </a>
-    <button class="menu-toggle" id="menu-toggle" aria-controls="sidebar" aria-expanded="false">Menú</button>
+    <div class="topbar-actions">
+      <button class="top-btn" id="search-toggle" aria-controls="search" aria-expanded="false" aria-label="Buscar en la guía"><i class="px" data-i="search"></i><span>Buscar</span></button>
+      <button class="top-btn menu-toggle" id="menu-toggle" aria-controls="sidebar" aria-expanded="false">Menú</button>
+    </div>
   </header>
+
+  <div class="scrim" id="scrim"></div>
+
+  <section class="search" id="search" aria-label="Buscar en la guía">
+    <label class="search-box">
+      <i class="px" data-i="search"></i>
+      <input type="search" id="search-input" placeholder="Fresa, Abigail, aspersor…" autocomplete="off" spellcheck="false" aria-label="Palabras clave">
+    </label>
+    <div class="search-results swap" id="search-results"></div>
+  </section>
 
   <div class="layout">
     <nav class="sidebar" id="sidebar" aria-label="Secciones">
       <ul class="nav-list" id="nav-list"></ul>
     </nav>
 
-    <main class="main panel" id="main" tabindex="-1"></main>
+    <main class="main panel leaving" id="main" tabindex="-1"></main>
   </div>
 
   <footer class="footer">

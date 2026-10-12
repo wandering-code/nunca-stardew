@@ -23,7 +23,7 @@ servidor: las secciones se cargan con `fetch`, así que abrir `index.html` como 
 ```
 index.html           # marco: cabecera, menú lateral y pie
 css/style.css
-js/app.js            # enrutado por hash (#/<seccion>), widgets y casillas guardadas
+js/app.js            # enrutado por hash (#/<seccion>), widgets, buscador y casillas guardadas
 js/data.js           # aldeanos, festivales, lotes, cultivos y peces legendarios
 js/icons.js          # iconos pixel propios, dibujados como rejillas de texto
 pages/<seccion>.html # el texto de cada sección

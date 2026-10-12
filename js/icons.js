@@ -7,6 +7,18 @@ const PALETTE = {
 };
 
 const ICONS = {
+  search: `
+..kkkk....
+.kUUUUk...
+kUwUUUUk..
+kUwUUUUk..
+kUUUUUUk..
+kUUUUUUk..
+.kUUUUk...
+..kkkkbk..
+......kBbk
+.......kBk
+........kk`,
   star: `
 .....k.....
 ....kYk....
