@@ -147,9 +147,13 @@ function bindChecks(root) {
 // Regalos que gustan a un aldeano: los suyos más los comunes, quitando sus excepciones
 const likesText = (n) => `${n.gusta}. Y lo que gusta a casi todos${n.menos ? `, menos ${n.menos}` : ''}.`;
 
+// Horario de un aldeano con su casa delante, para que «en casa» diga dónde está
+const homeOf = (n) => SV.homes[Object.keys(SV.homes).find((k) => n.casa.startsWith(k))];
+const whereRows = (n) => [['Su casa', `${n.casa}: ${homeOf(n)}`], ...n.donde];
+
 // Horario resumido de un aldeano, plegado para que las tarjetas no se hagan eternas
 const whereHtml = (n) => `<details class="where"><summary>${ic('clock')} Dónde encontrarle</summary>
-  <dl>${n.donde.map(([when, what]) => `<dt>${esc(when)}</dt><dd>${esc(what)}</dd>`).join('')}</dl></details>`;
+  <dl>${whereRows(n).map(([when, what]) => `<dt>${esc(when)}</dt><dd>${esc(what)}</dd>`).join('')}</dl></details>`;
 
 // Peces: dónde y en qué estaciones se pescan, en una línea
 const fishWhere = (f) => Object.entries(f.at).map(([k, s]) =>
@@ -495,7 +499,7 @@ function searchHtml(q) {
   // Horarios: quién anda por el sitio buscado (no se repite si ya salió el aldeano por su nombre)
   add('Quién anda por ahí', 'clock', SV.npcs.flatMap((n, i) => {
     if (has(res, n.n)) return [];
-    const hits = n.donde.filter(([when, what]) => has(res, `${when} ${what}`));
+    const hits = whereRows(n).filter(([when, what]) => has(res, `${when} ${what}`));
     return hits.length ? [row({ slug: 'aldeanos', sel: `[data-id="npc-${i}"]` },
       `<h4>${esc(n.n)}</h4>${hits.map(([when, what]) => `<p><b>${m(when)}:</b> ${m(what)}</p>`).join('')}`)] : [];
   }));

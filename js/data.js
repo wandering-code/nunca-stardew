@@ -427,6 +427,30 @@ SV.npcs = [
     donde: [['Siempre', 'En su torre del Bosque Tizón, de 6:00 a 23:00']] }
 ];
 
+// Dónde está cada casa en el mapa (la clave es el principio del campo casa del aldeano)
+SV.homes = {
+  'Tienda de Pierre': 'Al norte de la plaza del pueblo, en el centro; las habitaciones de la familia están al fondo de la tienda',
+  'Clínica': 'En el centro del pueblo, pegada a la izquierda de la tienda de Pierre; Harvey vive en el piso de arriba',
+  'Calle del Río 1': 'Justo al sureste de la tienda de Pierre, detrás del Salón; es la de la caseta del perro',
+  'Calle Sauce 1': 'En la calle del sur del pueblo, la casa pegada a la salida suroeste (la que va al Bosque Tizón)',
+  'Calle Sauce 2': 'En la calle del sur del pueblo, al lado de la Calle Sauce 1 (la de Jodi y Sam)',
+  'Caravana': 'Al este del Salón y al norte de la mansión del alcalde, junto al río',
+  'Mansión del alcalde': 'Al este del cementerio y al sur de la caravana, junto al puente que lleva al museo y la herrería',
+  'Salón Fruta Estelar': 'En el centro del pueblo, delante de la Calle del Río 1; Gus vive en la trastienda',
+  'Herrería': 'Cruzando el río del pueblo hacia el este, abajo a la derecha, justo al norte del museo; Clint duerme al fondo',
+  'Cabaña de la playa': 'Nada más bajar a la playa desde el pueblo, a la derecha (este)',
+  'Tienda de pesca (playa)': 'En el muelle de la playa, al sur del pueblo; Willy duerme en la trastienda',
+  'Rancho de Marnie': 'Al noreste del Bosque Tizón, nada más salir del pueblo por el suroeste',
+  'Cabaña del Bosque Tizón': 'En el Bosque Tizón, al sur del rancho de Marnie',
+  'Torre del Mago': 'En el extremo oeste del Bosque Tizón',
+  'Carpintería': 'En la Montaña, saliendo del pueblo por el norte; Maru tiene su cuarto y laboratorio dentro, Sebastian el sótano',
+  'Tienda de campaña (montaña)': 'En la Montaña, al noreste de la carpintería y al este del paso a la vía del tren',
+  'Minas': 'En la Montaña, justo al este de la entrada de las minas; no se mueve de ahí',
+  'Cloacas': 'Por la tapa de alcantarilla del sur del pueblo o las rejillas del sur del Bosque Tizón (necesitas la llave oxidada)',
+  'Oasis (desierto)': 'La tienda del Desierto; se llega en autobús cuando está reparado',
+  'Isla Jengibre': 'Hasta los 6 corazones, en su cabaña de la Isla Jengibre; después vive en la casa del árbol de la Montaña'
+};
+
 // Festivales y ventanas con fecha fija. t: f festival, w ventana de recolección
 SV.events = [
   { s: 0, d: [13], t: 'f', n: 'Festival del huevo', h: '9:00-14:00 · Plaza' },
