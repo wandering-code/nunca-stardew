@@ -144,6 +144,19 @@ function bindChecks(root) {
   });
 }
 
+// Regalos que gustan a un aldeano: los suyos más los comunes, quitando sus excepciones
+const likesText = (n) => `${n.gusta}. Y lo que gusta a casi todos${n.menos ? `, menos ${n.menos}` : ''}.`;
+
+// Horario resumido de un aldeano, plegado para que las tarjetas no se hagan eternas
+const whereHtml = (n) => `<details class="where"><summary>${ic('clock')} Dónde encontrarle</summary>
+  <dl>${n.donde.map(([when, what]) => `<dt>${esc(when)}</dt><dd>${esc(what)}</dd>`).join('')}</dl></details>`;
+
+// Peces: dónde y en qué estaciones se pescan, en una línea
+const fishWhere = (f) => Object.entries(f.at).map(([k, s]) =>
+  `${SV.fishPlaces[k]} (${s ? s.map((i) => SV.seasons[i].toLowerCase()).join(', ') : 'todo el año'})`).join(' · ');
+const WEATHER = { '': 'Cualquiera', s: 'Sol', r: 'Lluvia' };
+const difficulty = (d) => (d < 40 ? 'fácil' : d < 70 ? 'media' : d < 90 ? 'difícil' : 'muy difícil');
+
 // Widget con pestañas de estación: los botones se quedan y solo se funde el cuerpo
 function seasonWidget(el, extra, body) {
   let season = jump && jump.season != null ? jump.season : 0;
@@ -206,14 +219,17 @@ const WIDGETS = {
       const rows = SV.npcs.filter((n) => {
         if (filter === 'pareja' && !n.pareja) return false;
         if (/^\d$/.test(filter) && n.s !== +filter) return false;
-        return !q || norm(n.n + ' ' + n.ama.join(' ')).includes(norm(q));
+        return !q || norm(`${n.n} ${n.ama.join(' ')} ${n.gusta}`).includes(norm(q));
       }).sort((a, b) => a.n.localeCompare(b.n, 'es'));
       list.innerHTML = rows.map((n) => `
         <article class="card npc" data-id="npc-${SV.npcs.indexOf(n)}">
           <h3><span>${esc(n.n)}${n.pareja ? ' ' + ic('heart') : ''}</span>${seasonTag(n.s).replace('</span>', ' ' + n.d + '</span>')}</h3>
           <p class="card-meta">${esc(n.casa)}</p>
           <p class="loves">${ic('gift')} ${n.ama.map(esc).join(', ')}</p>
+          <p class="likes"><b>Le gusta:</b> ${esc(likesText(n))}</p>
+          <p class="avoid"><b>Evita:</b> ${esc(n.evita)}.</p>
           <p class="easy">Fácil: ${esc(n.facil)}</p>
+          ${whereHtml(n)}
         </article>`).join('') || '<p>Nadie coincide con la búsqueda.</p>';
       renderIcons(list);
     };
@@ -263,7 +279,7 @@ const WIDGETS = {
   crops(el) {
     seasonWidget(el, '', (season) => {
       const rows = SV.crops.map((c, i) => (c.s.includes(season) ? `<tr data-id="crop-${i}">
-        <td>${esc(c.n)}</td>
+        <td>${esc(c.n)}${c.gig ? ' <span class="tag green">gigante</span>' : ''}</td>
         <td class="num">${c.sem ? gold(c.sem) : '—'}</td>
         <td>${esc(c.donde)}</td>
         <td class="num">${c.dias}</td>
@@ -272,6 +288,62 @@ const WIDGETS = {
         <td>${esc(c.nota)}</td></tr>` : '')).join('');
       return `<div class="table-wrap"><table><thead><tr><th>Cultivo</th><th class="num">Semilla</th><th>Dónde</th><th class="num">Días</th><th class="num">Rebrota</th><th class="num">Venta</th><th>Notas</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     });
+  },
+
+  fish(el) {
+    let place = jump && jump.place ? jump.place : 'rp';
+    let season = jump && jump.season != null ? jump.season : 0;
+    let weather = 'all';
+    el.innerHTML = `
+      <div class="controls">
+        <label class="pick">Dónde <select aria-label="Sitio de pesca">${Object.entries(SV.fishPlaces).map(([k, v]) =>
+          `<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
+      </div>
+      <div class="controls">${SV.seasons.map((s, i) =>
+        `<button class="btn" data-s="${i}">${ic(SV.seasonIcons[i])} ${s}</button>`).join('')}</div>
+      <div class="controls">
+        <button class="btn" data-w="all">Haga el tiempo que haga</button>
+        <button class="btn" data-w="s">${ic('sun')} Hoy hace sol</button>
+        <button class="btn" data-w="r">Hoy llueve</button>
+      </div>
+      <div class="swap" data-body></div>`;
+    const box = el.querySelector('[data-body]');
+    const select = el.querySelector('select');
+    const press = () => {
+      el.querySelectorAll('[data-s]').forEach((b) => b.setAttribute('aria-pressed', +b.dataset.s === season));
+      el.querySelectorAll('[data-w]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.w === weather));
+    };
+    const draw = () => {
+      const island = ['im', 'ir', 'isla'].includes(place);
+      const rows = SV.fish.filter((f) => {
+        if (!(place in f.at)) return false;
+        const s = f.at[place];
+        if (s && !s.includes(season)) return false;
+        return weather === 'all' || !f.w || f.w === weather;
+      }).sort((a, b) => a.n.localeCompare(b.n, 'es')).map((f) => `<tr data-id="fish-${SV.fish.indexOf(f)}">
+        <td>${esc(f.n)}</td>
+        <td>${esc(f.h)}</td>
+        <td>${WEATHER[f.w]}</td>
+        <td class="num">${f.dif} <small>${difficulty(f.dif)}</small></td>
+        <td>${[f.lote ? `Lote «${esc(f.lote)}»` : '', esc(f.nota || '')].filter(Boolean).join('. ')}</td></tr>`).join('');
+      box.innerHTML = (island ? '<p class="card-meta">En la isla no hay estaciones: lo que sale aquí pica todo el año.</p>' : '')
+        + (rows
+          ? `<div class="table-wrap"><table><thead><tr><th>Pez</th><th>Hora</th><th>Tiempo</th><th class="num">Dificultad</th><th>Lote y notas</th></tr></thead><tbody>${rows}</tbody></table></div>`
+          : '<p>Aquí no pica nada con estas condiciones (salvo basura y algas).</p>');
+      renderIcons(box);
+    };
+    select.value = place;
+    select.addEventListener('change', () => { place = select.value; fadeSwap(box, draw); });
+    el.querySelectorAll('[data-s]').forEach((b) => b.addEventListener('click', () => { season = +b.dataset.s; press(); fadeSwap(box, draw); }));
+    el.querySelectorAll('[data-w]').forEach((b) => b.addEventListener('click', () => { weather = b.dataset.w; press(); fadeSwap(box, draw); }));
+    press();
+    draw();
+  },
+
+  crabpot(el) {
+    el.innerHTML = `<div class="table-wrap"><table><thead><tr><th>Agua</th><th>Qué sale</th></tr></thead><tbody>${
+      SV.crabPot.map((r) => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')
+    }</tbody></table></div>`;
   },
 
   legendary(el) {
@@ -380,7 +452,20 @@ function searchHtml(q) {
         <div><dt>Crece en</dt><dd>${c.dias} días${c.reb ? `, y rebrota cada ${c.reb === 1 ? 'día' : c.reb + ' días'}` : ''}</dd></div>
         <div><dt>Venta</dt><dd>${gold(c.venta)}</dd></div>
         <div><dt>Riego</dt><dd>A diario, salvo lluvia o aspersor</dd></div>
-      </dl>${c.nota ? `<p>${m(c.nota)}</p>` : ''}`)));
+      </dl>${c.gig ? '<p>Puede hacerse gigante.</p>' : ''}${c.nota ? `<p>${m(c.nota)}</p>` : ''}`)));
+
+  add('Peces', 'fish', SV.fish
+    .map((f, i) => ({ f, i, top: has(res, f.n) }))
+    .filter((x) => x.top || has(res, `${x.f.n} ${x.f.lote || ''} ${x.f.nota || ''} ${fishWhere(x.f)}`))
+    .sort((a, b) => b.top - a.top)
+    .map(({ f, i }) => {
+      const [k, s] = Object.entries(f.at)[0];
+      return row({ slug: 'pesca', place: k, season: s ? s[0] : 0, sel: `[data-id="fish-${i}"]` }, `
+        <h4>${m(f.n)}</h4>
+        <p>${m(fishWhere(f))}</p>
+        <p class="card-meta">${esc(f.h)} · ${WEATHER[f.w]} · dificultad ${difficulty(f.dif)}${f.lote ? ` · lote ${m(f.lote)}` : ''}</p>
+        ${f.nota ? `<p>${m(f.nota)}</p>` : ''}`);
+    }));
 
   const people = [];
   const gifts = [];
@@ -392,15 +477,28 @@ function searchHtml(q) {
       people.push(row(j, `<h4>${m(n.n)}${n.pareja ? ' ' + ic('heart') : ''}</h4>
         <p class="card-meta">${bday} · ${esc(n.casa)}</p>
         <p>${ic('gift')} Le encanta: ${n.ama.map(esc).join(', ')}</p>
+        <p>Le gusta: ${esc(n.gusta)}</p>
         <p class="easy">Fácil: ${esc(n.facil)}</p>`));
     } else if (loved.length) {
       gifts.push(row(j, `<h4>${esc(n.n)}</h4><p>${ic('gift')} Le encanta: ${loved.map(m).join(', ')}</p><p class="card-meta">${bday}</p>`));
+    } else if (has(res, n.gusta)) {
+      gifts.push(row(j, `<h4>${esc(n.n)}</h4><p>Le gusta: ${m(n.gusta)}</p><p class="card-meta">${bday}</p>`));
     } else if (has(res, n.facil)) {
       gifts.push(row(j, `<h4>${esc(n.n)}</h4><p>${m(n.facil)}</p><p class="card-meta">${bday}</p>`));
+    } else if (has(res, n.evita)) {
+      gifts.push(row(j, `<h4>${esc(n.n)}</h4><p>Evita: ${m(n.evita)}</p><p class="card-meta">${bday}</p>`));
     }
   });
   add('Aldeanos', 'heart', people);
   add('A quién regalárselo', 'gift', gifts);
+
+  // Horarios: quién anda por el sitio buscado (no se repite si ya salió el aldeano por su nombre)
+  add('Quién anda por ahí', 'clock', SV.npcs.flatMap((n, i) => {
+    if (has(res, n.n)) return [];
+    const hits = n.donde.filter(([when, what]) => has(res, `${when} ${what}`));
+    return hits.length ? [row({ slug: 'aldeanos', sel: `[data-id="npc-${i}"]` },
+      `<h4>${esc(n.n)}</h4>${hits.map(([when, what]) => `<p><b>${m(when)}:</b> ${m(what)}</p>`).join('')}`)] : [];
+  }));
 
   const lotes = [];
   SV.rooms.forEach((room, r) => {
@@ -421,6 +519,9 @@ function searchHtml(q) {
   add('Calendario', 'cal', SV.events.filter((e) => has(res, `${e.n} ${e.h}`)).map((e) =>
     row({ slug: 'calendario', season: e.s }, `<h4>${m(e.n)} ${seasonTag(e.s)}</h4>
       <p>${e.d.length > 1 ? `Días ${e.d[0]}-${e.d[e.d.length - 1]}` : `Día ${e.d[0]}`} · ${m(e.h)}</p>`)));
+
+  add('Peces de trampa', 'fish', SV.crabPot.filter((r) => has(res, r.join(' '))).map((r) =>
+    row({ slug: 'pesca', sel: '[data-widget="crabpot"]' }, `<h4>Trampa para cangrejos · ${m(r[0])}</h4><p>${m(r[1])}</p>`)));
 
   add('Peces legendarios', 'fish', SV.legendary.filter((f) => has(res, f.join(' '))).map((f) =>
     row({ slug: 'pesca', sel: '[data-widget="legendary"]' }, `<h4>${m(f[0])}</h4><p>${m(f[1])} · ${m(f[2])} · Nivel de pesca ${esc(f[3])}</p>`)));
